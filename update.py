@@ -20,6 +20,7 @@ SPEED_MIN_MBPS = float(os.getenv("SPEED_MIN", 8.0))
 # 数量控制
 MAX_NODES = int(os.getenv("MAX_NODES", 1000000)) # 默认全量
 TOP_PER_REGION = int(os.getenv("TOP_PER_REGION", 10))
+MAX_LATENCY = float(os.getenv("MAX_LATENCY", 0))  # 延迟上限(ms)，0=不限制
 
 # 资源与文件配置
 DOWNLOAD_TIMEOUT = float(os.getenv("DOWNLOAD_TIMEOUT", 60.0))
@@ -122,6 +123,8 @@ async def main():
     pbar.close()
 
     # 2. 分组筛选
+    if MAX_LATENCY > 0:
+        tcp_results = [(n, lat) for n, lat in tcp_results if lat <= MAX_LATENCY]
     groups = defaultdict(list)
     for n, lat in tcp_results: groups[n.region].append((n, lat))
     candidates = []
